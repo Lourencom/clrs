@@ -512,6 +512,31 @@ class BellmanFordSampler(Sampler):
     return [graph, source_node]
 
 
+class MaxFlowSampler(Sampler):
+    """Max-Flow/Min-cut network sampler."""
+
+    def _sample_data(
+        self,
+        length: int,
+        p: Tuple[float, ...] = (0.5,),
+        low: float = 0.,
+        high: float = 1.,
+    ):
+        graph = self._random_er_graph(
+            nb_nodes=length,
+            p=self._rng.choice(p),
+            directed=True,
+            acyclic=False,
+            weighted=True,
+            low=low,
+            high=high)
+        source = self._rng.choice(length)
+        sink = self._rng.choice(length)
+        while sink == source:
+            sink = self._rng.choice(length)
+        return [graph, source, sink]
+
+
 class DAGPathSampler(Sampler):
   """Sampler for DAG shortest paths."""
 
@@ -690,6 +715,7 @@ SAMPLERS = {
     'segments_intersect': SegmentsSampler,
     'graham_scan': ConvexHullSampler,
     'jarvis_march': ConvexHullSampler,
+    'edmonds_karp': MaxFlowSampler,
 }
 
 

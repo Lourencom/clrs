@@ -61,6 +61,7 @@ _DEFAULT_TRAIN_ALGOS_AND_LENGTHS = {
     'dag_shortest_paths': [4, 5, 10, 11, 12, 15, 19],
     'dfs': [4, 5, 10, 11, 12, 15, 19, 23],
     'dijkstra': [4, 5, 10, 11, 12, 15, 19, 23, 28],
+    'edmonds_karp': [4, 5, 10, 11, 12, 15, 19, 23, 28, 31],  # i think these are sizes for training graphs, i would say a length of 4 is a graph with 4 nodes, not sure though
     'find_maximum_subarray_kadane': [4, 5, 10, 11, 12, 15, 19, 23, 28, 31],
     'floyd_warshall': [4, 5, 10],
     'graham_scan': [4, 5, 10, 11, 12, 15, 19, 23, 28, 31],
@@ -96,6 +97,7 @@ _DEFAULT_VAL_ALGOS_AND_LENGTHS = {
     'dag_shortest_paths': list(range(4, 20)),
     'dfs': list(range(4, 21)),
     'dijkstra': list(range(4, 26)),
+    'edmonds_karp': list(range(4, 33)), # this is the same but for validation, so we should have larger sizes for validation to test OOD generalization
     'find_maximum_subarray_kadane': list(range(4, 65)),
     'floyd_warshall': list(range(4, 12)),
     'graham_scan': list(range(4, 32)),

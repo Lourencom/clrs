@@ -75,6 +75,7 @@ CLRS_30_ALGS = [
     'dag_shortest_paths',
     'dfs',
     'dijkstra',
+    'edmonds_karp',
     'find_maximum_subarray_kadane',
     'floyd_warshall',
     'graham_scan',
@@ -523,4 +524,22 @@ SPECS = types.MappingProxyType({
         'i': (Stage.HINT, Location.NODE, Type.MASK_ONE),
         'phase': (Stage.HINT, Location.GRAPH, Type.CATEGORICAL),
     },
+    'edmonds_karp': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),  # Node positions
+        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Source node mask
+        'd': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Sink node mask
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),  # Adjacency matrix (binary connection)
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),  # Edge capacities (scalar values)
+
+        'cut': (Stage.OUTPUT, Location.EDGE, Type.MASK),  # Minimum cut mask over edges (binary)
+        'pi': (Stage.OUTPUT, Location.NODE, Type.POINTER),  # Predecessor pointers for nodes (for flow path)
+
+        'mark': (Stage.HINT, Location.NODE, Type.MASK),  # Visited nodes during the flow/cut process
+        'flow': (Stage.HINT, Location.EDGE, Type.SCALAR),  # Flow values along edges (intermediate states)
+        'residual': (Stage.HINT, Location.EDGE, Type.SCALAR),  # Residual capacities on edges
+        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),  # Predecessor pointers in the hint stage
+        'cut_h': (Stage.HINT, Location.EDGE, Type.MASK),  # Intermediate hint for the cut decision
+        'u': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Current vertex being processed
+        'v': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Next vertex being processed
+    }
 })

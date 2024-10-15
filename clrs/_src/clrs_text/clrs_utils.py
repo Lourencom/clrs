@@ -31,6 +31,7 @@ CLRS_TASKS_WITH_HINTS = tuple(
         'dag_shortest_paths',
         'dfs',
         'dijkstra',
+        'edmonds_karp',
         'find_maximum_subarray_kadane',
         'floyd_warshall',
         'graham_scan',
