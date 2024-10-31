@@ -78,6 +78,8 @@ CLRS_30_ALGS = [
     'edmonds_karp',
     'find_maximum_subarray_kadane',
     'floyd_warshall',
+    'ford_fulkerson',
+    'ford_fulkerson_min_cut',
     'graham_scan',
     'heapsort',
     'insertion_sort',
@@ -541,5 +543,33 @@ SPECS = types.MappingProxyType({
         'cut_h': (Stage.HINT, Location.EDGE, Type.MASK),  # Intermediate hint for the cut decision
         'u': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Current vertex being processed
         'v': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Next vertex being processed
-    }
+    },
+    'ford_fulkerson': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
+        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'w': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'mask': (Stage.HINT, Location.NODE, Type.MASK),
+        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),
+        '__is_bfs_op': (Stage.HINT, Location.GRAPH, Type.MASK),
+        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR)
+    },
+    'ford_fulkerson_mincut': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
+        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'w': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'mask': (Stage.HINT, Location.NODE, Type.MASK),
+        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),
+        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'c_h': (Stage.HINT, Location.NODE, Type.CATEGORICAL),
+        '__is_bfs_op': (Stage.HINT, Location.GRAPH, Type.MASK),
+        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR),
+        'c': (Stage.OUTPUT, Location.NODE, Type.CATEGORICAL),
+    },
 })
