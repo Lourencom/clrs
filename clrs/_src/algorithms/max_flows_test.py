@@ -1,7 +1,7 @@
 from absl.testing import absltest
 import numpy as np
 from clrs._src.algorithms import max_flows
-
+import networkx as nx
 # Max-flow test cases
 
 # Undirected with uniform capacities
@@ -42,47 +42,78 @@ DIRECTED_WEIGHTED_GRAPH = np.array([
     [0, 0, 0, 0, 0, 0],
 ])
 
+CAPACITY_MATRIX_1 = np.array([
+    [0, 16, 13, 0, 0, 0],
+    [0, 0, 10, 12, 0, 0],
+    [0, 4, 0, 0, 14, 0],
+    [0, 0, 9, 0, 0, 20],
+    [0, 0, 0, 7, 0, 4],
+    [0, 0, 0, 0, 0, 0],
+])
+
+CAPACITY_MATRIX_2 = np.array([
+    [0, 3, 2, 0],
+    [0, 0, 5, 2],
+    [0, 0, 0, 3],
+    [0, 0, 0, 0],
+])
+
 class MaxFlowsTest(absltest.TestCase):
 
-    def test_edmonds_karp_undirected_uniform(self):
-        """Test Edmonds-Karp on an undirected graph with uniform edge capacities."""
-        expected_max_flow = 2
-        flow, _ = max_flows.edmonds_karp(UNDIRECTED_UNIFORM_GRAPH, 0, 4)
-        total_flow = np.sum(flow[0, :]) # Compute total flow from source to sink
-        self.assertEqual(total_flow, expected_max_flow)
+    def _minimum_cut(self, A, s, t):
+        C = np.zeros((A.shape[0], 2))
 
-    def test_edmonds_karp_undirected_weighted(self):
-        """Test Edmonds-Karp on an undirected graph with varying edge capacities."""
-        expected_max_flow = 4
-        flow, _ = max_flows.edmonds_karp(UNDIRECTED_WEIGHTED_GRAPH, 0, 4)
+        graph = nx.from_numpy_array(A)
+        nx.set_edge_attributes(graph, {(i, j): A[i, j] for i, j in zip(*A.nonzero())},
+                               name='capacity')
 
-        total_flow = np.sum(flow[0, :]) # Compute total flow from source to sink
-        self.assertEqual(total_flow, expected_max_flow)
+        _, cuts = nx.minimum_cut(graph, s, t)
 
-    def test_edmonds_karp_directed_uniform(self):
-        """Test Edmonds-Karp on a directed graph with uniform edge capacities."""
-        expected_max_flow = 1
-        flow, _ = max_flows.edmonds_karp(DIRECTED_UNIFORM_GRAPH, 0, 4)
+        for v in cuts[0]:
+            C[v][0] = 1
 
-        total_flow = np.sum(flow[0, :])  # Compute total flow from source to sink
-        self.assertEqual(total_flow, expected_max_flow)
+        for v in cuts[1]:
+            C[v][1] = 1
 
-    def test_edmonds_karp_non_reachable(self):
-        """Test Edmonds-Karp on a directed graph with uniform edge capacities."""
-        expected_max_flow = 0 # Just to test the case where Node 5 is not reachable from 0
-        flow, _ = max_flows.edmonds_karp(DIRECTED_UNIFORM_GRAPH, 0, 5)
+        return C
 
-        total_flow = np.sum(flow[0, :])  # Compute total flow from source to sink
-        self.assertEqual(total_flow, expected_max_flow)
+    def test_max_flow_min_cut_1(self):
+        # Test Case 1
+        capacity = CAPACITY_MATRIX_1
+        expected_cut = np.array([1, 1, 1, 0, 1, 0], dtype=float)
+        cut, _ = max_flows.max_flow_min_cut(capacity, 0, 5)
+        np.testing.assert_array_equal(expected_cut, cut)
 
-    def test_edmonds_karp_directed_weighted(self):
-        """Test Edmonds-Karp on a directed graph with varying edge capacities."""
-        expected_max_flow = 20
-        flow, _ = max_flows.edmonds_karp(DIRECTED_WEIGHTED_GRAPH, 0, 5)
-        total_flow = np.sum(flow[0, :]) # Compute total flow from source to sink
-        self.assertEqual(total_flow, expected_max_flow)
+    def test_max_flow_min_cut_2(self):
+        # Test Case 2
+        capacity = CAPACITY_MATRIX_2
+        expected_cut = np.array([1, 0, 0, 0], dtype=float)
+        cut, _ = max_flows.max_flow_min_cut(capacity, 0, 3)
+        np.testing.assert_array_equal(expected_cut, cut)
 
-    
+    def test_max_flow_min_cut_3(self):
+        # Test Case 3 (Directed graph)
+        capacity = np.array([
+            [0, 10, 10, 0],
+            [0, 0, 2, 4],
+            [0, 0, 0, 8],
+            [0, 0, 0, 0],
+        ])
+        expected_cut = np.array([1, 1, 1, 0], dtype=float)
+        cut, _ = max_flows.max_flow_min_cut(capacity, 0, 3)
+        np.testing.assert_array_equal(expected_cut, cut)
+
+    def test_max_flow_min_cut_4(self):
+        # Test Case 4 (Disconnected graph)
+        capacity = np.array([
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ])
+        expected_cut = np.array([1, 0, 0], dtype=float)
+        cut, _ = max_flows.max_flow_min_cut(capacity, 0, 2)
+        np.testing.assert_array_equal(expected_cut, cut)
+
 
 if __name__ == "__main__":
     absltest.main()

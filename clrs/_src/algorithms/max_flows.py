@@ -129,7 +129,7 @@ def _ff_impl(A: _Array, s: int, t: int, probes, w):
             'f_h': np.copy(f),
             'df': np.copy(df),
             'c_h': np.copy(C),
-            '__is_bfs_op': np.copy([1])
+            '__is_bfs_op': np.array([1])
         })
 
     while True:
@@ -154,7 +154,7 @@ def _ff_impl(A: _Array, s: int, t: int, probes, w):
                     'f_h': np.copy(f),
                     'df': np.copy(df),
                     'c_h': np.copy(C),
-                    '__is_bfs_op': np.copy([1])
+                    '__is_bfs_op': np.array([1])
                 })
 
             if np.all(d == prev_d):
@@ -231,6 +231,11 @@ def ford_fulkerson(A: _Array, s: int, t: int):
 
 
 def ford_fulkerson_mincut(A: _Array, s: int, t: int):
+    """
+    This is exactly the same as the Ford-Fulkerson algorithm, but with an additional
+    output probe for the minimum cut.
+    Also, insinde the _ff_impl function, the minimum cut is also passed as hint.
+    """
     chex.assert_rank(A, 2)
     probes = probing.initialize(specs.SPECS['ford_fulkerson_mincut'])
     A_pos = np.arange(A.shape[0])
@@ -286,68 +291,147 @@ def _minimum_cut(A, s, t):
     return C
 
 
-if __name__ == "__main__":
-    # Test the Edmonds-Karp algorithm on a simple graph
-    DIRECTED_WEIGHTED_GRAPH = np.array([
-        [0, 10, 0, 10, 0, 0],
-        [0, 0, 4, 2, 8, 0],
-        [0, 0, 0, 0, 0, 10],
-        [0, 0, 9, 0, 0, 10],
-        [0, 0, 0, 6, 0, 10],
-        [0, 0, 0, 0, 0, 0],
-    ])
+def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
+    """Edmonds-Karp algorithm for computing max-flow and min-cut."""
 
-    UNDIRECTED_UNIFORM_GRAPH = np.array([
-        [0, 1, 0, 0, 1],
-        [1, 0, 1, 1, 1],
-        [0, 1, 0, 1, 0],
-        [0, 1, 1, 0, 1],
-        [1, 1, 0, 1, 0],
-    ])
+    chex.assert_rank(capacity, 2)
+    probes = probing.initialize(specs.SPECS['max_flow_min_cut'])
 
-    # Undirected with weighted capacities
-    UNDIRECTED_WEIGHTED_GRAPH = np.array([
-        [0, 2, 3, 0, 0],
-        [2, 0, 1, 3, 2],
-        [3, 1, 0, 0, 1],
-        [0, 3, 0, 0, 5],
-        [0, 2, 1, 5, 0],
-    ])
+    num_nodes = capacity.shape[0]
+    pos = np.arange(num_nodes)
 
-    # Directed with uniform capacities
-    DIRECTED_UNIFORM_GRAPH = np.array([
-        [0, 1, 0, 1, 0, 0],
-        [0, 0, 0, 0, 1, 0],
-        [0, 0, 0, 0, 1, 1],
-        [0, 1, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0],
-        [0, 0, 0, 0, 0, 1],
-    ])
+    # Push input probes
+    probing.push(
+        probes,
+        specs.Stage.INPUT,
+        next_probe={
+            'pos': np.copy(pos) * 1.0 / num_nodes,
+            's': probing.mask_one(s, num_nodes),
+            't': probing.mask_one(t, num_nodes),
+            'capacity': np.copy(capacity),
+            'adj': probing.graph(np.copy(capacity))
+        })
 
-    max_flow, _ = ford_fulkerson(DIRECTED_WEIGHTED_GRAPH, 0, 5)
-    print("Ford fulkerson, result matrix:")
-    print(max_flow)
+    # Initialize flow and residual capacities
+    flow = np.zeros_like(capacity)
+    residual_capacity = np.copy(capacity)
 
-    cut = _minimum_cut(DIRECTED_WEIGHTED_GRAPH, 0, 5)
-    print("Minimum cut:")
-    print(cut)
+    while True:
+        # Initialize BFS for finding augmenting path
+        visited = np.zeros(num_nodes, dtype=bool)
+        parent = -np.ones(num_nodes, dtype=int)
+        queue = [s]
+        visited[s] = True
 
-    ff_mincut, _ = ford_fulkerson_mincut(DIRECTED_WEIGHTED_GRAPH, 0, 5)
-    print("Ford fulkerson mincut, result matrix:")
-    print(ff_mincut)
+        # Push initial hint probes for BFS
+        probing.push(
+            probes,
+            specs.Stage.HINT,
+            next_probe={
+                'flow_h': np.copy(flow),
+                'residual_capacity_h': np.copy(residual_capacity),
+                'visited_h': visited.astype(float),
+                'path_h': np.copy(parent),
+                'augmenting_path_h': np.zeros(num_nodes),
+                'u_h': probing.mask_one(s, num_nodes)
+            })
 
-    cut = _minimum_cut(UNDIRECTED_UNIFORM_GRAPH, 0, 4)
-    print("Minimum cut undir unif:")
-    print(cut)
+        found_augmenting_path = False
 
-    cut = _minimum_cut(UNDIRECTED_WEIGHTED_GRAPH, 0, 4)
-    print("Minimum cut undir wei:")
-    print(cut)
+        # BFS loop
+        while queue:
+            u = queue.pop(0)
+            for v in range(num_nodes):
+                if not visited[v] and residual_capacity[u, v] > 0:
+                    visited[v] = True
+                    parent[v] = u
+                    queue.append(v)
 
-    cut = _minimum_cut(DIRECTED_UNIFORM_GRAPH, 0, 5) # unreachable
-    print("Minimum cut unreachable dir unif:")
-    print(cut)
+                    # Push hint probes during BFS
+                    probing.push(
+                        probes,
+                        specs.Stage.HINT,
+                        next_probe={
+                            'flow_h': np.copy(flow),
+                            'residual_capacity_h': np.copy(residual_capacity),
+                            'visited_h': visited.astype(float),
+                            'path_h': np.copy(parent),
+                            'augmenting_path_h': np.zeros(num_nodes),
+                            'u_h': probing.mask_one(u, num_nodes)
+                        })
 
-    cut = _minimum_cut(DIRECTED_UNIFORM_GRAPH, 0, 4)
-    print("Minimum cut dir unif:")
-    print(cut)
+                    if v == t:
+                        found_augmenting_path = True
+                        break
+            if found_augmenting_path:
+                break
+
+        # If no augmenting path is found, exit the loop
+        if not found_augmenting_path:
+            break
+
+        # Trace back the augmenting path and find bottleneck capacity
+        path = []
+        v = t
+        bottleneck = float('inf')
+        while v != s:
+            u = parent[v]
+            bottleneck = min(bottleneck, residual_capacity[u, v])
+            path.append(v)
+            v = u
+        path.append(s)
+        path = path[::-1]  # Reverse to get path from source to sink
+
+        # Create mask for nodes in the augmenting path
+        augmenting_path_mask = np.zeros(num_nodes)
+        augmenting_path_mask[path] = 1.0
+
+        # Update flow and residual capacities along the augmenting path
+        v = t
+        while v != s:
+            u = parent[v]
+            flow[u, v] += bottleneck
+            flow[v, u] -= bottleneck  # Reverse flow for residual graph
+            residual_capacity[u, v] -= bottleneck
+            residual_capacity[v, u] += bottleneck
+            v = u
+
+        # Push hint probes after updating flow and residual capacities
+        probing.push(
+            probes,
+            specs.Stage.HINT,
+            next_probe={
+                'flow_h': np.copy(flow),
+                'residual_capacity_h': np.copy(residual_capacity),
+                'visited_h': visited.astype(float),
+                'path_h': np.copy(parent),
+                'augmenting_path_h': np.copy(augmenting_path_mask),
+                'u_h': probing.mask_one(u, num_nodes)
+            })
+
+    # After max-flow computation, find the min-cut
+    # Perform BFS to find reachable nodes from source in residual graph
+    visited = np.zeros(num_nodes, dtype=bool)
+    queue = [s]
+    visited[s] = True
+    while queue:
+        u = queue.pop(0)
+        for v in range(num_nodes):
+            if not visited[v] and residual_capacity[u, v] > 0:
+                visited[v] = True
+                queue.append(v)
+
+    # Nodes reachable from source are on one side of the min-cut
+    cut = visited.astype(float)
+
+    # Push output probes
+    probing.push(
+        probes,
+        specs.Stage.OUTPUT,
+        next_probe={
+            'cut': np.copy(cut)
+        })
+
+    probing.finalize(probes)
+
+    return cut, probes

@@ -87,6 +87,7 @@ CLRS_30_ALGS = [
     'kmp_matcher',
     'lcs_length',
     'matrix_chain_order',
+    'max_flow_min_cut',
     'minimum',
     'mst_kruskal',
     'mst_prim',
@@ -545,31 +546,49 @@ SPECS = types.MappingProxyType({
         'v': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Next vertex being processed
     },
     'ford_fulkerson': {
-        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
-        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
-        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),  # Node positions
+        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Source node mask
+        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Sink node mask
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),   # Adjacency matrix (binary connection)
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
-        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
         'w': (Stage.INPUT, Location.EDGE, Type.SCALAR),
-        'mask': (Stage.HINT, Location.NODE, Type.MASK),
-        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),
+
+        'mask': (Stage.HINT, Location.NODE, Type.MASK),  # Visited nodes
+        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),  # Predecessor pointers in the hint stage
+        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR), # Flow values along edges (intermediate states)
         '__is_bfs_op': (Stage.HINT, Location.GRAPH, Type.MASK),
-        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR),
-        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR)
+
+        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR) # Flow values along edges (final state)
     },
     'ford_fulkerson_mincut': {
-        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
-        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
-        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),  # Node positions
+        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Source node mask
+        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Sink node mask
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),   # Adjacency matrix (binary connection)
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
-        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
         'w': (Stage.INPUT, Location.EDGE, Type.SCALAR),
-        'mask': (Stage.HINT, Location.NODE, Type.MASK),
-        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),
-        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR),
-        'c_h': (Stage.HINT, Location.NODE, Type.CATEGORICAL),
+
+        'mask': (Stage.HINT, Location.NODE, Type.MASK),  # Visited nodes
+        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),  # Predecessor pointers in the hint stage
+        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR), # Flow values along edges (intermediate states)
+        'c_h': (Stage.HINT, Location.NODE, Type.CATEGORICAL), # Cut set for nodes (intermediate)
         '__is_bfs_op': (Stage.HINT, Location.GRAPH, Type.MASK),
-        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR),
-        'c': (Stage.OUTPUT, Location.NODE, Type.CATEGORICAL),
+
+        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR), # Flow values along edges (final state)
+        'c': (Stage.OUTPUT, Location.NODE, Type.CATEGORICAL), # Cut set for nodes
+    },
+    'max_flow_min_cut': { ### TODO: Implement the rest
+    'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),             # Node positions or indices
+    's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),             # Source node
+    't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),             # Sink node
+    'capacity': (Stage.INPUT, Location.EDGE, Type.SCALAR),        # Edge capacities
+    'adj': (Stage.INPUT, Location.EDGE, Type.MASK),               # Adjacency matrix/mask
+    'cut': (Stage.OUTPUT, Location.NODE, Type.MASK),              # Nodes in the minimum cut (output)
+    'flow_h': (Stage.HINT, Location.EDGE, Type.SCALAR),           # Flow values on edges (hint)
+    'residual_capacity_h': (Stage.HINT, Location.EDGE, Type.SCALAR), # Residual capacities (hint)
+    'visited_h': (Stage.HINT, Location.NODE, Type.MASK),          # Visited nodes during BFS (hint)
+    'path_h': (Stage.HINT, Location.NODE, Type.POINTER),          # Parent pointers in BFS (hint)
+    'augmenting_path_h': (Stage.HINT, Location.NODE, Type.MASK),  # Nodes in current augmenting path (hint)
+    'u_h': (Stage.HINT, Location.NODE, Type.MASK_ONE),            # Current node being processed (hint)
     },
 })

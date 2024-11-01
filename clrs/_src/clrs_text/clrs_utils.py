@@ -43,6 +43,7 @@ CLRS_TASKS_WITH_HINTS = tuple(
         'kmp_matcher',
         'lcs_length',
         'matrix_chain_order',
+        'max_flow_min_cut',
         'minimum',
         'mst_kruskal',
         'mst_prim',

@@ -60,3 +60,4 @@ from clrs._src.algorithms.strings import kmp_matcher
 from clrs._src.algorithms.max_flows import edmonds_karp
 from clrs._src.algorithms.max_flows import ford_fulkerson
 from clrs._src.algorithms.max_flows import ford_fulkerson_mincut
+from clrs._src.algorithms.max_flows import max_flow_min_cut

@@ -718,6 +718,7 @@ SAMPLERS = {
     'edmonds_karp': MaxFlowSampler,
     'ford_fulkerson': MaxFlowSampler,
     'ford_fulkerson_mincut': MaxFlowSampler,
+    'max_flow_min_cut': MaxFlowSampler,
 }
 
 
@@ -934,3 +935,4 @@ def process_random_pos(sample_iterator, rng):
       yield feedback
 
   return _iterate()
+
