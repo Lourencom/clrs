@@ -323,6 +323,8 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
         queue = [s]
         visited[s] = True
 
+        current_cut_h = visited.astype(float) # fixme: not sure if i like this hack
+
         # Push initial hint probes for BFS
         probing.push(
             probes,
@@ -333,7 +335,8 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
                 'visited_h': visited.astype(float),
                 'path_h': np.copy(parent),
                 'augmenting_path_h': np.zeros(num_nodes),
-                'u_h': probing.mask_one(s, num_nodes)
+                'u_h': probing.mask_one(s, num_nodes),
+                'current_cut_h': np.copy(current_cut_h), # fixme: not sure if i like this hack
             })
 
         found_augmenting_path = False
@@ -347,6 +350,8 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
                     parent[v] = u
                     queue.append(v)
 
+                    current_cut_h = visited.astype(float)  # fixme: not sure if i like this hack
+
                     # Push hint probes during BFS
                     probing.push(
                         probes,
@@ -357,7 +362,8 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
                             'visited_h': visited.astype(float),
                             'path_h': np.copy(parent),
                             'augmenting_path_h': np.zeros(num_nodes),
-                            'u_h': probing.mask_one(u, num_nodes)
+                            'u_h': probing.mask_one(u, num_nodes),
+                            'current_cut_h': np.copy(current_cut_h),  # fixme: not sure if i like this hack
                         })
 
                     if v == t:
@@ -396,6 +402,18 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
             residual_capacity[v, u] += bottleneck
             v = u
 
+        # Compute current_cut_h after flow update fixme fixme this is hack too
+        visited_cut = np.zeros(num_nodes, dtype=bool)
+        queue_cut = [s]
+        visited_cut[s] = True
+        while queue_cut:
+            u_cut = queue_cut.pop(0)
+            for v_cut in range(num_nodes):
+                if not visited_cut[v_cut] and residual_capacity[u_cut, v_cut] > 0:
+                    visited_cut[v_cut] = True
+                    queue_cut.append(v_cut)
+        current_cut_h = visited_cut.astype(float)
+
         # Push hint probes after updating flow and residual capacities
         probing.push(
             probes,
@@ -406,9 +424,11 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
                 'visited_h': visited.astype(float),
                 'path_h': np.copy(parent),
                 'augmenting_path_h': np.copy(augmenting_path_mask),
-                'u_h': probing.mask_one(u, num_nodes)
+                'u_h': probing.mask_one(u, num_nodes),
+                'current_cut_h': np.copy(current_cut_h),  # fixme: not sure if i like this hack
             })
 
+    """
     # After max-flow computation, find the min-cut
     # Perform BFS to find reachable nodes from source in residual graph
     visited = np.zeros(num_nodes, dtype=bool)
@@ -423,6 +443,9 @@ def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
 
     # Nodes reachable from source are on one side of the min-cut
     cut = visited.astype(float)
+    """
+
+    cut = current_cut_h # fixme: not sure if i like this hack
 
     # Push output probes
     probing.push(

@@ -583,12 +583,15 @@ SPECS = types.MappingProxyType({
     't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),             # Sink node
     'capacity': (Stage.INPUT, Location.EDGE, Type.SCALAR),        # Edge capacities
     'adj': (Stage.INPUT, Location.EDGE, Type.MASK),               # Adjacency matrix/mask
-    'cut': (Stage.OUTPUT, Location.NODE, Type.MASK),              # Nodes in the minimum cut (output)
+
     'flow_h': (Stage.HINT, Location.EDGE, Type.SCALAR),           # Flow values on edges (hint)
     'residual_capacity_h': (Stage.HINT, Location.EDGE, Type.SCALAR), # Residual capacities (hint)
     'visited_h': (Stage.HINT, Location.NODE, Type.MASK),          # Visited nodes during BFS (hint)
     'path_h': (Stage.HINT, Location.NODE, Type.POINTER),          # Parent pointers in BFS (hint)
     'augmenting_path_h': (Stage.HINT, Location.NODE, Type.MASK),  # Nodes in current augmenting path (hint)
     'u_h': (Stage.HINT, Location.NODE, Type.MASK_ONE),            # Current node being processed (hint)
+    'current_cut_h': (Stage.HINT, Location.NODE, Type.MASK),  # Hint for intermediate cuts
+
+    'cut': (Stage.OUTPUT, Location.NODE, Type.MASK),  # Nodes in the minimum cut (output)
     },
 })

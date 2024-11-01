@@ -82,6 +82,7 @@ class MaxFlowsTest(absltest.TestCase):
         capacity = CAPACITY_MATRIX_1
         expected_cut = np.array([1, 1, 1, 0, 1, 0], dtype=float)
         cut, _ = max_flows.max_flow_min_cut(capacity, 0, 5)
+        print(self._minimum_cut(capacity, 0, 5))
         np.testing.assert_array_equal(expected_cut, cut)
 
     def test_max_flow_min_cut_2(self):
@@ -89,6 +90,7 @@ class MaxFlowsTest(absltest.TestCase):
         capacity = CAPACITY_MATRIX_2
         expected_cut = np.array([1, 0, 0, 0], dtype=float)
         cut, _ = max_flows.max_flow_min_cut(capacity, 0, 3)
+        print(self._minimum_cut(capacity, 0, 3))
         np.testing.assert_array_equal(expected_cut, cut)
 
     def test_max_flow_min_cut_3(self):
@@ -101,6 +103,7 @@ class MaxFlowsTest(absltest.TestCase):
         ])
         expected_cut = np.array([1, 1, 1, 0], dtype=float)
         cut, _ = max_flows.max_flow_min_cut(capacity, 0, 3)
+        print(self._minimum_cut(capacity, 0, 3))
         np.testing.assert_array_equal(expected_cut, cut)
 
     def test_max_flow_min_cut_4(self):
@@ -112,6 +115,7 @@ class MaxFlowsTest(absltest.TestCase):
         ])
         expected_cut = np.array([1, 0, 0], dtype=float)
         cut, _ = max_flows.max_flow_min_cut(capacity, 0, 2)
+        print(self._minimum_cut(capacity, 0, 2))
         np.testing.assert_array_equal(expected_cut, cut)
 
 
