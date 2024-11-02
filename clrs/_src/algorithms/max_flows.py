@@ -14,17 +14,18 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
     """Edmonds-Karp max-flow algorithm (Ford-Fulkerson method using BFS)."""
 
     chex.assert_rank(A, 2)
-    probes = probing.initialize(specs.SPECS['edmonds_karp'])  # Updated to use 'edmonds_karp' spec
+    probes = probing.initialize(specs.SPECS['edmonds_karp'])
 
-    A_pos = np.arange(A.shape[0])
+    num_nodes = A.shape[0]
+    A_pos = np.arange(num_nodes)
 
     probing.push(
         probes,
         specs.Stage.INPUT,
         next_probe={
-            'pos': np.copy(A_pos) * 1.0 / A.shape[0],
-            's': probing.mask_one(s, A.shape[0]),
-            'd': probing.mask_one(t, A.shape[0]),
+            'pos': np.copy(A_pos) * 1.0 / num_nodes,
+            's': probing.mask_one(s, num_nodes),
+            't': probing.mask_one(t, num_nodes),
             'A': np.copy(A),
             'adj': probing.graph(np.copy(A)),
         })
@@ -32,8 +33,8 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
     # Initialize residual capacity matrix and other necessary variables
     residual = np.copy(A)
     flow = np.zeros(A.shape)  # To track flow along edges
-    mark = np.zeros(A.shape[0])  # To mark visited nodes
-    pi = np.full(A.shape[0], -1)  # Predecessor array
+    mark = np.zeros(num_nodes)  # To mark visited nodes
+    pi = np.full(num_nodes, -1)  # Predecessor array
 
     def bfs(source, sink):
         """BFS to find augmenting path."""
@@ -43,11 +44,14 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
         pi[:] = -1
         while queue:
             u = queue.pop(0)
-            for v in range(A.shape[0]):
+            for v in range(num_nodes):
                 if residual[u, v] > 0 and not mark[v]:  # Check for residual capacity
                     queue.append(v)
                     mark[v] = 1
                     pi[v] = u
+
+                    # TODO: Push hint probes for BFS maybe?, we would add is_bfs_op spec then?
+
                     if v == sink:
                         return True
         return False
@@ -70,7 +74,7 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
             flow[u, v] += path_flow
             v = u
 
-        # Push current state to the probes (intermediate state tracking)
+        # After each augmentation, we push current state (intermediate state tracking)
         probing.push(
             probes,
             specs.Stage.HINT,
@@ -79,13 +83,25 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
                 'residual': np.copy(residual),
                 'pi_h': np.copy(pi),
                 'mark': np.copy(mark),
-                'u': probing.mask_one(u, A.shape[0]),  # Current vertex
-                'v': probing.mask_one(v, A.shape[0]),  # Next vertex
-                'cut_h': np.copy((residual == 0) & (A > 0))  # Intermediate hint for the min-cut
+                'u': probing.mask_one(u, num_nodes),  # Current vertex
+                'v': probing.mask_one(v, num_nodes),  # Next vertex
+                'cut_h': np.copy(mark)  # Intermediate hint for the min-cut
             })
 
+    # After max-flow was computed, we just need to find which nodes are reachable from source
+    # aka the min-cut
+    queue = [s]
+    mark[:] = 0
+    mark[s] = 1
+    while queue:
+        u = queue.pop(0)
+        for v in range(num_nodes):
+            if residual[u, v] > 0 and not mark[v]:
+                queue.append(v)
+                mark[v] = 1
+
     # The min-cut is the set of edges with residual capacity == 0
-    cut = (residual == 0) & (A > 0)
+    cut = np.copy(mark)
 
     # Push the final output (min-cut and predecessor pointers)
     probing.push(
