@@ -78,7 +78,6 @@ CLRS_30_ALGS = [
     'edmonds_karp',
     'find_maximum_subarray_kadane',
     'floyd_warshall',
-    'ford_fulkerson',
     'ford_fulkerson_min_cut',
     'graham_scan',
     'heapsort',
@@ -544,21 +543,6 @@ SPECS = types.MappingProxyType({
         'cut_h': (Stage.HINT, Location.EDGE, Type.MASK),  # Intermediate hint for the cut decision
         'u': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Current vertex being processed
         'v': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Next vertex being processed
-    },
-    'ford_fulkerson': {
-        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),  # Node positions
-        's': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Source node mask
-        't': (Stage.INPUT, Location.NODE, Type.MASK_ONE),  # Sink node mask
-        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),   # Adjacency matrix (binary connection)
-        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
-        'w': (Stage.INPUT, Location.EDGE, Type.SCALAR),
-
-        'mask': (Stage.HINT, Location.NODE, Type.MASK),  # Visited nodes
-        'pi_h': (Stage.HINT, Location.NODE, Type.POINTER),  # Predecessor pointers in the hint stage
-        'f_h': (Stage.HINT, Location.EDGE, Type.SCALAR), # Flow values along edges (intermediate states)
-        '__is_bfs_op': (Stage.HINT, Location.GRAPH, Type.MASK),
-
-        'f': (Stage.OUTPUT, Location.EDGE, Type.SCALAR) # Flow values along edges (final state)
     },
     'ford_fulkerson_mincut': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),  # Node positions

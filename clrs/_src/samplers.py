@@ -716,7 +716,6 @@ SAMPLERS = {
     'graham_scan': ConvexHullSampler,
     'jarvis_march': ConvexHullSampler,
     'edmonds_karp': MaxFlowSampler,
-    'ford_fulkerson': MaxFlowSampler,
     'ford_fulkerson_mincut': MaxFlowSampler,
     'max_flow_min_cut': MaxFlowSampler,
 }

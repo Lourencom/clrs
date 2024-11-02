@@ -34,7 +34,6 @@ CLRS_TASKS_WITH_HINTS = tuple(
         'edmonds_karp',
         'find_maximum_subarray_kadane',
         'floyd_warshall',
-        'ford_fulkerson',
         'ford_fulkerson_mincut',
         'graham_scan',
         'heapsort',

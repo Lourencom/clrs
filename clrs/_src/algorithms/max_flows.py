@@ -92,7 +92,7 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
         probes,
         specs.Stage.OUTPUT,
         next_probe={
-            'cut': np.copy(cut),
+            'cut': np.copy(cut), # whether node is reachable or not
             'pi': np.copy(pi),  # Predecessor pointers for nodes
         })
 
@@ -193,43 +193,6 @@ def _ff_impl(A: _Array, s: int, t: int, probes, w):
     return f, probes
 
 
-def ford_fulkerson(A: _Array, s: int, t: int):
-
-    chex.assert_rank(A, 2)
-    probes = probing.initialize(specs.SPECS['ford_fulkerson'])
-    A_pos = np.arange(A.shape[0])
-
-    rng = np.random.default_rng(0)
-
-    w = rng.random(size=A.shape)
-    w = np.maximum(w, w.T) * probing.graph(np.copy(A))
-
-    probing.push(
-        probes,
-        specs.Stage.INPUT,
-        next_probe={
-            'pos': np.copy(A_pos) * 1.0 / A.shape[0],
-            's': probing.mask_one(s, A.shape[0]),
-            't': probing.mask_one(t, A.shape[0]),
-            'A': np.copy(A),
-            'adj': probing.graph(np.copy(A)),
-            'w': np.copy(w),
-        })
-
-    f, probes = _ff_impl(A, s, t, probes, w)
-
-    probing.push(
-        probes,
-        specs.Stage.OUTPUT,
-        next_probe={
-            'f': np.copy(f)
-        }
-    )
-    probing.finalize(probes)
-
-    return f, probes
-
-
 def ford_fulkerson_mincut(A: _Array, s: int, t: int):
     """
     This is exactly the same as the Ford-Fulkerson algorithm, but with an additional
@@ -274,21 +237,11 @@ def ford_fulkerson_mincut(A: _Array, s: int, t: int):
 
 
 def _minimum_cut(A, s, t):
-    C = np.zeros((A.shape[0], 2))
-
-    graph = nx.from_numpy_array(A)
-    nx.set_edge_attributes(graph, {(i, j): A[i, j] for i, j in zip(*A.nonzero())},
-                           name='capacity')
-
-    _, cuts = nx.minimum_cut(graph, s, t)
-
-    for v in cuts[0]:
-        C[v][0] = 1
-
-    for v in cuts[1]:
-        C[v][1] = 1
-
-    return C
+    graph = nx.from_numpy_array(A, create_using=nx.DiGraph)
+    for i, j in zip(*A.nonzero()):
+        graph[i][j]['capacity'] = A[i, j]
+    cut_value, partition = nx.minimum_cut(graph, s, t)
+    return partition
 
 
 def max_flow_min_cut(capacity: _Array, s: int, t: int) -> _Out:
