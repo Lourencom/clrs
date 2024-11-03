@@ -117,7 +117,7 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
         specs.Stage.OUTPUT,
         next_probe={
             'cut': np.copy(cut), # whether node is reachable or not
-            'cut_edges': np.copy(cut_edges),  # Predecessor pointers for nodes
+        #    'cut_edges': np.copy(cut_edges),  # Predecessor pointers for nodes
         })
 
     probing.finalize(probes)
