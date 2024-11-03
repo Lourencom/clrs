@@ -542,7 +542,7 @@ SPECS = types.MappingProxyType({
         'v': (Stage.HINT, Location.NODE, Type.MASK_ONE),  # Next vertex being processed
 
         'cut': (Stage.OUTPUT, Location.NODE, Type.MASK),  # Minimum cut mask on reachable nodes
-        'pi': (Stage.OUTPUT, Location.NODE, Type.POINTER),  # Predecessor pointers for nodes (for flow path)
+        'cut_edges': (Stage.OUTPUT, Location.EDGE, Type.MASK),  # Edges in the minimum cut
     },
     'ford_fulkerson_mincut': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),  # Node positions

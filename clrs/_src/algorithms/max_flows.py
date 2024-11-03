@@ -100,8 +100,16 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
                 queue.append(v)
                 mark[v] = 1
 
-    # The min-cut is the set of edges with residual capacity == 0
     cut = np.copy(mark)
+
+    # For the set of vertices reachable as S, and unreachable as T.
+    # To obtain the minimum cut C, we simply find all edges in the original graph G,
+    # which begin at some vertex in S and end at some vertex in T.
+    cut_edges = np.zeros(A.shape)
+    for u in range(num_nodes):
+        for v in range(num_nodes):
+            if A[u, v] > 0 and cut[u] == 1 and cut[v] == 0:
+                cut_edges[u, v] = 1  # Edge (u, v) is in the min-cut
 
     # Push the final output (min-cut and predecessor pointers)
     probing.push(
@@ -109,7 +117,7 @@ def edmonds_karp(A: _Array, s: int, t: int) -> _Out:
         specs.Stage.OUTPUT,
         next_probe={
             'cut': np.copy(cut), # whether node is reachable or not
-            'pi': np.copy(pi),  # Predecessor pointers for nodes
+            'cut_edges': np.copy(cut_edges),  # Predecessor pointers for nodes
         })
 
     probing.finalize(probes)
